@@ -1,0 +1,310 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #edf0ed;
+  --surface: #ffffff;
+  --ink: #14201b;
+  --muted: #5a6962;
+  --line: #d3dad5;
+  --sign: #0e5a43;
+  --sign-ink: #ffffff;
+  --sign-soft: #dcebe4;
+  --amber: #e9a100;
+  --amber-soft: #fcf0cf;
+  --red: #c2372c;
+  --red-soft: #f7dedb;
+  --steel: #8b9892;
+  --radius: 0.5rem;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --primary: var(--sign);
+  --primary-foreground: var(--sign-ink);
+  --muted-foreground: var(--muted);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--amber);
+  --destructive: var(--red);
+}
+
+.dark {
+  --paper: #111815;
+  --surface: #19231f;
+  --ink: #e7eeea;
+  --muted: #9baaa2;
+  --line: #2b3833;
+  --sign: #0b4a37;
+  --sign-soft: #17382d;
+  --amber: #f0b429;
+  --amber-soft: #3a2f10;
+  --red: #e2685d;
+  --red-soft: #3b1d1a;
+  --steel: #6f7d77;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --primary: var(--sign);
+  --primary-foreground: #ffffff;
+  --muted-foreground: var(--muted);
+  --border: var(--line);
+  --input: var(--line);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-family: var(--font-barlow), "Segoe UI", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    min-height: 100%;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-barlow-condensed), "Arial Narrow", Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 34px);
+    line-height: 1.05;
+  }
+  h2 {
+    font-size: 22px;
+    line-height: 1.15;
+  }
+  :focus-visible {
+    outline: 3px solid var(--amber);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .bg-paper {
+    background-color: var(--paper);
+  }
+  .bg-surface {
+    background-color: var(--surface);
+  }
+  .bg-sign {
+    background-color: var(--sign);
+  }
+  .bg-sign-soft {
+    background-color: var(--sign-soft);
+  }
+  .bg-amber {
+    background-color: var(--amber);
+  }
+  .bg-amber-soft {
+    background-color: var(--amber-soft);
+  }
+  .bg-ink {
+    background-color: var(--ink);
+  }
+  .text-ink {
+    color: var(--ink);
+  }
+  .text-muted {
+    color: var(--muted);
+  }
+  .text-sign {
+    color: var(--sign);
+  }
+  .text-sign-ink {
+    color: var(--sign-ink);
+  }
+  .text-surface {
+    color: var(--surface);
+  }
+  .text-red {
+    color: var(--red);
+  }
+  .border-line {
+    border-color: var(--line);
+  }
+  .border-ink {
+    border-color: var(--ink);
+  }
+  .border-sign {
+    border-color: var(--sign);
+  }
+  .border-amber {
+    border-color: var(--amber);
+  }
+  .font-display {
+    font-family: var(--font-barlow-condensed), "Arial Narrow", Arial, sans-serif;
+  }
+  .num {
+    font-family: var(--font-barlow-condensed), "Arial Narrow", Arial, sans-serif;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .plate {
+    background-image:
+      radial-gradient(circle at 4px 4px, var(--steel) 1.3px, transparent 1.6px),
+      radial-gradient(
+        circle at calc(100% - 4px) 4px,
+        var(--steel) 1.3px,
+        transparent 1.6px
+      ),
+      radial-gradient(
+        circle at 4px calc(100% - 4px),
+        var(--steel) 1.3px,
+        transparent 1.6px
+      ),
+      radial-gradient(
+        circle at calc(100% - 4px) calc(100% - 4px),
+        var(--steel) 1.3px,
+        transparent 1.6px
+      );
+  }
+}
+
+/* Inventory row → stacked card below desktop */
+@media (max-width: 1023px) {
+  .inventory-row {
+    grid-template-columns: 76px 1fr auto !important;
+    grid-template-areas:
+      "t n s"
+      "p m a";
+    row-gap: 6px;
+  }
+  .inventory-row > :nth-child(1) {
+    grid-area: p;
+  }
+  .inventory-row > :nth-child(2) {
+    grid-area: t;
+  }
+  .inventory-row > :nth-child(3) {
+    grid-area: n;
+  }
+  .inventory-row > :nth-child(4) {
+    grid-area: m;
+    text-align: left !important;
+  }
+  .inventory-row > :nth-child(5) {
+    grid-area: a;
+    text-align: right !important;
+  }
+  .inventory-row > :nth-child(6),
+  .inventory-row > :nth-child(7) {
+    display: none;
+  }
+  .inventory-row > :nth-child(8) {
+    grid-area: s;
+  }
+  .inventory-head {
+    display: none !important;
+  }
+}
+
+/* Tables → stacked labeled cards on phone */
+@media (max-width: 767px) {
+  .data-table thead {
+    display: none;
+  }
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
+    display: block;
+    width: 100%;
+  }
+  .data-table tr {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .data-table tr:last-child {
+    border-bottom: 0;
+  }
+  .data-table td {
+    border: 0 !important;
+    padding: 3px 0 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    text-align: left !important;
+  }
+  .data-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    flex: none;
+    max-width: 42%;
+  }
+  .data-table td:empty {
+    display: none;
+  }
+  .data-table td.card-actions {
+    justify-content: flex-end;
+    padding-top: 8px !important;
+  }
+  .data-table td.card-actions::before {
+    display: none;
+  }
+  .data-table td.card-title {
+    font-size: 16px;
+  }
+  .data-table td.card-title::before {
+    display: none;
+  }
+
+  .hbar {
+    grid-template-columns: minmax(72px, 28%) 1fr 56px !important;
+    gap: 8px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .calcbox label {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+  .calcbox output {
+    text-align: left !important;
+  }
+
+  .route .stop {
+    font-size: 11px !important;
+  }
+}
+
+/* Tablet mid-width: horizontal kanban scroll, not phone stack */
+@media (max-width: 1023px) {
+  .board-scroll {
+    display: flex !important;
+    grid-template-columns: none !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding-bottom: 8px;
+  }
+  .board-scroll > * {
+    flex: 0 0 min(240px, 78vw);
+    scroll-snap-align: start;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .board-scroll > * {
+    flex-basis: min(220px, 42vw);
+  }
+}

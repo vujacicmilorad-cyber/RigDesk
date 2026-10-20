@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RigDesk demo for truck dealers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF0ED; --surface:#FFFFFF; --ink:#14201B; --muted:#5A6962; --line:#D3DAD5;
+  --sign:#0E5A43; --sign-ink:#FFFFFF; --sign-soft:#DCEBE4; --amber:#E9A100; --amber-soft:#FCF0CF;
+  --red:#C2372C; --red-soft:#F7DEDB; --steel:#8B9892;
+  --display:'Barlow Condensed','Arial Narrow',Arial,sans-serif; --body:'Barlow','Segoe UI',Arial,sans-serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#111815; --surface:#19231F; --ink:#E7EEEA; --muted:#9BAAA2; --line:#2B3833;
+    --sign:#0B4A37; --sign-soft:#17382D; --amber:#F0B429; --amber-soft:#3A2F10; --red:#E2685D; --red-soft:#3B1D1A; --steel:#6F7D77;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111815; --surface:#19231F; --ink:#E7EEEA; --muted:#9BAAA2; --line:#2B3833;
+  --sign:#0B4A37; --sign-soft:#17382D; --amber:#F0B429; --amber-soft:#3A2F10; --red:#E2685D; --red-soft:#3B1D1A; --steel:#6F7D77;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;letter-spacing:.01em}
+h1{font-size:34px;line-height:1.05}
+h2{font-size:22px;line-height:1.15}
+.num{font-family:var(--display);font-weight:600;font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:216px 1fr;height:100%}
+.side{background:var(--sign);color:var(--sign-ink);padding:22px 14px;display:flex;flex-direction:column;gap:4px}
+.brand{font-family:var(--display);font-weight:700;font-size:28px;line-height:1;padding:0 10px}
+.dealer{font-size:13px;opacity:.8;padding:4px 10px 22px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;justify-content:space-between;align-items:center;text-align:left;padding:9px 10px;border-radius:8px;font-family:var(--display);font-size:20px;font-weight:500;border:2px solid transparent}
+.nav button:hover{background:rgba(255,255,255,.1)}
+.nav button[aria-current="page"]{border-color:#fff;font-weight:600}
+.nav .count{font-family:var(--body);font-size:12px;font-weight:600;background:var(--amber);color:#1B1400;border-radius:10px;padding:1px 7px}
+.side-foot{margin-top:auto;font-size:12.5px;opacity:.8;padding:0 10px;line-height:1.4}
+
+.main{overflow:auto;padding:26px 30px 60px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.sub{color:var(--muted);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;font-weight:600;border:1.5px solid var(--ink);background:var(--surface)}
+.btn:hover{background:var(--paper)}
+.btn.primary{background:var(--sign);border-color:var(--sign);color:#fff}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.small{padding:6px 12px;font-size:14px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.strip{display:grid;grid-template-columns:repeat(5,1fr);margin-bottom:18px}
+.strip div{padding:14px 18px;border-right:1px solid var(--line)}
+.strip div:last-child{border-right:0}
+.strip .num{font-size:38px;line-height:1}
+.strip span{color:var(--muted);font-size:13.5px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel-h{display:flex;justify-content:space-between;align-items:baseline;padding:14px 18px 8px}
+.panel-h small{color:var(--muted)}
+.list{list-style:none;margin:0;padding:0 8px 8px}
+.list li button,.list li.static{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:9px 10px;border-radius:8px}
+.list li button:hover{background:var(--paper)}
+.mark{flex:none;width:12px;height:12px;margin-top:5px;transform:rotate(45deg);background:var(--amber);border-radius:2px}
+.mark.red{background:var(--red)}
+.tick{flex:none;width:18px;height:18px;margin-top:2px;border-radius:50%;background:var(--sign-soft);color:var(--sign);display:grid;place-items:center;font-size:11px;font-weight:700}
+:root[data-theme="dark"] .tick{color:#7FD6B4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tick{color:#7FD6B4}}
+.list time{margin-left:auto;color:var(--muted);font-size:12.5px;white-space:nowrap;padding-left:8px}
+.money{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.money .panel{padding:16px 18px}
+.money .num{font-size:34px;line-height:1.1}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:6px 13px;border-radius:20px;border:1.5px solid var(--line);background:var(--surface);font-weight:500;font-size:14px}
+.chip[aria-pressed="true"]{border-color:var(--sign);background:var(--sign-soft);font-weight:600}
+.rows{overflow:hidden}
+.row{display:grid;grid-template-columns:86px 76px 1.6fr 1fr 1fr .6fr 1fr 110px;gap:12px;align-items:center;width:100%;text-align:left;padding:10px 16px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+button.row:hover{background:var(--paper)}
+.row.head{color:var(--muted);font-size:13px;padding-top:12px;padding-bottom:8px}
+.r{text-align:right}
+.plate{display:inline-block;font-family:var(--display);font-weight:600;font-size:16px;line-height:1;padding:5px 8px;border:1.5px solid var(--ink);border-radius:4px;background:
+  radial-gradient(circle at 4px 4px,var(--steel) 1.3px,transparent 1.6px),
+  radial-gradient(circle at calc(100% - 4px) 4px,var(--steel) 1.3px,transparent 1.6px),
+  radial-gradient(circle at 4px calc(100% - 4px),var(--steel) 1.3px,transparent 1.6px),
+  radial-gradient(circle at calc(100% - 4px) calc(100% - 4px),var(--steel) 1.3px,transparent 1.6px),var(--surface)}
+.thumb{width:76px;height:38px;border-radius:6px;background:var(--paper);display:block}
+.name{font-weight:600}
+.name small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.st{display:inline-block;padding:3px 10px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid var(--line)}
+.st.available{background:var(--sign-soft);border-color:var(--sign)}
+.st.hold{background:var(--amber-soft);border-color:var(--amber)}
+.st.sold,.st.delivered{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.old{color:var(--red);font-weight:600}
+
+.scrim{position:fixed;inset:0;background:rgba(10,20,16,.45);display:none;z-index:20}
+.scrim.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--surface);z-index:21;overflow:auto;transform:translateX(102%);transition:transform .22s ease;padding:calc(20px + env(safe-area-inset-top,0px)) 24px calc(30px + env(safe-area-inset-bottom,0px))}
+.drawer.on{transform:none}
+.d-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.close{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);font-size:18px;flex:none}
+.hero{background:var(--paper);border-radius:10px;margin:14px 0;padding:10px 16px 0}
+.hero svg{display:block;width:100%;height:auto}
+
+.route{margin:18px 4px 8px;display:grid;grid-template-columns:repeat(6,1fr);position:relative}
+.route::before{content:"";position:absolute;left:8.33%;right:8.33%;top:9px;height:3px;background:var(--line)}
+.route i{position:absolute;left:8.33%;top:9px;height:3px;background:var(--sign)}
+.stop{position:relative;text-align:center;font-size:12.5px;color:var(--muted)}
+.stop b{display:block;width:14px;height:14px;margin:3px auto 8px;border-radius:50%;background:var(--surface);border:3px solid var(--line)}
+.stop.done b{background:var(--sign);border-color:var(--sign)}
+.stop.now{color:var(--ink);font-weight:600}
+.stop.now b{width:18px;height:18px;margin:1px auto 6px;border-radius:3px;transform:rotate(45deg);background:var(--amber);border-color:var(--ink);border-width:2px}
+
+.specs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0}
+.specs div{background:var(--surface);padding:9px 12px}
+.specs span{display:block;color:var(--muted);font-size:12.5px}
+.calc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.calc div{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.calc span{display:block;color:var(--muted);font-size:12.5px}
+.calc .num{font-size:22px}
+.calc .profit{background:var(--sign);border-color:var(--sign);color:#fff}
+.calc .profit span{color:#fff;opacity:.85}
+.check{list-style:none;margin:8px 0 0;padding:0}
+.check label{display:flex;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--sign)}
+.check small{margin-left:auto;color:var(--muted)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.hint{color:var(--muted);font-size:13.5px;margin-top:10px}
+
+.leads{display:grid;grid-template-columns:320px 1fr;min-height:480px;overflow:hidden}
+.lead-list{border-right:1px solid var(--line)}
+.lead{display:block;width:100%;text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);border-left:4px solid transparent}
+.lead:hover{background:var(--paper)}
+.lead[aria-current="true"]{border-left-color:var(--sign);background:var(--paper)}
+.lead small{display:block;color:var(--muted);font-size:13px}
+.lead .flag{float:right;font-size:12px;font-weight:600;color:var(--muted)}
+.lead .flag.wait{color:var(--red)}
+.thread{padding:18px 22px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:78%;padding:10px 14px;border-radius:12px;background:var(--paper)}
+.msg.out{align-self:flex-end;background:var(--sign-soft)}
+.msg small{display:block;color:var(--muted);font-size:12px;margin-bottom:2px;font-weight:600}
+.card{border:1.5px solid var(--sign);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card span{display:block;color:var(--muted);font-size:12.5px}
+
+.bars{display:flex;align-items:flex-end;gap:14px;height:170px;padding:10px 18px 0}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.bar b{width:100%;max-width:54px;background:var(--sign);border-radius:5px 5px 0 0}
+.bar.cur b{background:var(--amber)}
+.bar span{font-size:12.5px;color:var(--muted)}
+.hbar{display:grid;grid-template-columns:150px 1fr 44px;gap:10px;align-items:center;padding:7px 18px}
+.hbar i{display:block;height:12px;border-radius:6px;background:var(--sign)}
+.hbar i.late{background:var(--red)}
+.pad{padding:0 0 12px}
+
+.modal{position:fixed;inset:0;z-index:22;display:none;place-items:center;padding:16px}
+.modal.on{display:grid}
+.sheet{background:var(--surface);border-radius:12px;width:min(560px,100%);max-height:100%;overflow:auto;padding:22px 24px}
+.vin{display:flex;gap:8px;margin:14px 0}
+.vin input{flex:1;min-width:0;font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:.08em;padding:8px 12px;border:1.5px solid var(--ink);border-radius:8px;background:var(--surface)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form label{font-size:13px;color:var(--muted);display:block}
+.form input{display:block;width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);margin-top:3px;color:var(--ink)}
+.form input.filled{border-color:var(--sign);background:var(--sign-soft)}
+.desc{margin-top:12px;min-height:66px;border:1.5px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:14.5px}
+
+.toasts{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;flex-direction:column;gap:8px;width:min(360px,calc(100% - 36px))}
+.toast{background:var(--ink);color:var(--surface);border-radius:10px;padding:10px 14px;border-left:6px solid var(--amber);animation:in .25s ease}
+.toast small{display:block;opacity:.7;font-size:12px;font-weight:600}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}.toast{animation:none}}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  .side{order:2;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));gap:0}
+  .brand,.dealer,.side-foot{display:none}
+  .nav{flex-direction:row;flex:1;justify-content:space-around}
+  .nav button{font-size:16px;padding:8px 9px;gap:5px}
+  .main{padding:18px 14px 40px}
+  h1{font-size:28px}
+  .strip{grid-template-columns:repeat(2,1fr)}
+  .strip div{border-bottom:1px solid var(--line)}
+  .cols,.money,.leads{grid-template-columns:1fr}
+  .lead-list{border-right:0;border-bottom:1px solid var(--line)}
+  .row.head{display:none}
+  .row{grid-template-columns:76px 1fr auto;grid-template-areas:"t n s" "p m a";row-gap:6px}
+  .row>:nth-child(1){grid-area:p}.row>:nth-child(2){grid-area:t}.row>:nth-child(3){grid-area:n}
+  .row>:nth-child(4){grid-area:m;text-align:left}.row>:nth-child(5){grid-area:a}.row>:nth-child(6),.row>:nth-child(7){display:none}.row>:nth-child(8){grid-area:s}
+  .calc{grid-template-columns:1fr 1fr}.specs{grid-template-columns:1fr 1fr}.card{grid-template-columns:1fr 1fr}
+  .msg{max-width:92%}.stop{font-size:11px}
+}
+
+.nav button{font-size:18px;padding:7px 10px}
+.nav hr{border:0;border-top:1px solid rgba(255,255,255,.25);margin:8px 10px;width:auto}
+.saved{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--sign);color:#fff;border-radius:10px;padding:14px 18px;margin-bottom:18px}
+.saved .num{font-size:30px;line-height:1}
+.saved span{opacity:.9}
+.sms{margin:0 18px 18px;background:var(--paper);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14.5px;max-width:460px}
+.sms b{display:block;margin-bottom:4px}
+.tabs{display:flex;gap:4px;border-bottom:1.5px solid var(--line);margin:16px 0 4px;overflow-x:auto}
+.tabs button{padding:8px 12px;font-family:var(--display);font-size:18px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--sign)}
+.shots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}
+.shot{aspect-ratio:4/3;border-radius:8px;border:1.5px dashed var(--line);display:grid;place-items:center;text-align:center;font-size:11.5px;color:var(--muted);padding:4px;line-height:1.2}
+.shot.ok{border:1.5px solid var(--sign);background:var(--sign-soft);color:var(--ink);font-weight:600}
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+.tbl th{text-align:left;color:var(--muted);font-weight:500;font-size:13px;padding:8px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .r{text-align:right}
+.tbl tfoot td{font-weight:600;border-top:1.5px solid var(--ink)}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12.5px;font-weight:600;border:1.5px solid var(--line);white-space:nowrap}
+.tag.ok{background:var(--sign-soft);border-color:var(--sign)}
+.tag.wait{background:var(--amber-soft);border-color:var(--amber)}
+.tag.off{color:var(--muted)}
+.tag.bad{background:var(--red-soft);border-color:var(--red)}
+.qrbox{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:14px}
+.qrbox svg{width:84px;height:84px;flex:none;background:#fff;padding:5px;border-radius:6px}
+.market{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:16px 0}
+.scale{position:relative;height:8px;border-radius:4px;background:var(--line);margin:26px 0 22px}
+.scale i{position:absolute;top:-5px;width:3px;height:18px;background:var(--ink)}
+.scale i::after{content:attr(data-l);position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:12px;white-space:nowrap;font-style:normal;font-weight:600}
+.scale i.avg{background:var(--steel)}
+.scale i.avg::after{top:20px;font-weight:400;color:var(--muted)}
+.board{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.kcol{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:220px}
+.kcol h3{font-size:18px;display:flex;justify-content:space-between;padding:2px 4px 8px}
+.kcol h3 span{font-family:var(--body);font-size:13px;color:var(--muted);font-weight:400}
+.kcard{display:block;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:var(--paper)}
+.kcard:hover{border-color:var(--sign)}
+.kcard small{display:block;color:var(--muted);font-size:13px}
+.kcard .num{font-size:20px}
+.kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:14px 0}
+.kv div{background:var(--surface);padding:9px 12px}
+.kv span{display:block;color:var(--muted);font-size:12.5px}
+.calcbox{border:1.5px solid var(--sign);border-radius:10px;padding:14px 16px;margin:14px 0}
+.calcbox label{display:grid;grid-template-columns:110px 1fr 84px;gap:10px;align-items:center;font-size:14px;margin:6px 0}
+.calcbox input[type=range]{width:100%;accent-color:var(--sign)}
+.calcbox output{text-align:right;font-family:var(--display);font-weight:600;font-size:18px}
+.pay{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.pay .num{font-size:34px}
+.prep-card{padding:14px 18px;margin-bottom:14px}
+.prog{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:10px 0 4px}
+.prog i{display:block;height:100%;background:var(--sign)}
+.crew{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.crew div{padding:12px 16px}
+.crew .num{font-size:28px;line-height:1}
+.tl{list-style:none;margin:0;padding:6px 18px 16px}
+.tl li{position:relative;padding:0 0 16px 26px}
+.tl li::before{content:"";position:absolute;left:5px;top:6px;bottom:-6px;width:2px;background:var(--line)}
+.tl li:last-child::before{display:none}
+.tl li::after{content:"";position:absolute;left:0;top:4px;width:12px;height:12px;border-radius:50%;background:var(--sign)}
+.tl li.later::after{background:var(--surface);border:2.5px solid var(--steel)}
+.tl small{display:block;color:var(--muted);font-size:13px}
+.rule{display:flex;gap:14px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line)}
+.rule:last-child{border-bottom:0}
+.rule div{flex:1}
+.rule small{display:block;color:var(--muted);font-size:13.5px}
+.sw{flex:none;width:44px;height:26px;border-radius:13px;background:var(--steel);position:relative}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.sw[aria-checked="true"]{background:var(--sign)}
+.sw[aria-checked="true"]::after{left:21px}
+.integ{display:flex;flex-wrap:wrap;gap:8px;padding:4px 18px 18px}
+.ba{display:grid;grid-template-columns:1fr 40px 1fr;align-items:stretch;border-bottom:1px solid var(--line)}
+.ba:last-child{border-bottom:0}
+.ba>div{padding:14px 18px}
+.ba .was{color:var(--muted)}
+.ba .mid{display:grid;place-items:center;padding:0;color:var(--sign);font-size:20px}
+.ba .now{font-weight:600}
+.ba.h>div{font-family:var(--display);font-size:20px;font-weight:600;color:var(--ink)}
+.section{margin-top:18px}
+@media (max-width:860px){
+  .nav{overflow-x:auto;justify-content:flex-start;gap:2px}
+  .nav button{white-space:nowrap;font-size:15px}
+  .nav hr{display:none}
+  .shots{grid-template-columns:repeat(3,1fr)}
+  .crew{grid-template-columns:1fr 1fr}
+  .kv{grid-template-columns:1fr 1fr}
+  .ba{grid-template-columns:1fr}
+  .ba .mid{display:none}
+  .ba .was{padding-bottom:0}
+  .ba.h{display:none}
+  .calcbox label{grid-template-columns:90px 1fr 70px}
+}
+@media (prefers-reduced-motion:reduce){.sw::after{transition:none}}
+
+.whoami{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.whoami select{padding:6px 10px;border:1.5px solid var(--ink);border-radius:8px;background:var(--surface);color:var(--ink);font-weight:600}
+.tick{font-family:var(--display);font-size:13px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">RigDesk</div>
+    <div class="dealer">Magnum Truck Sales, Chicago</div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">Demo with sample data. Same view on phone, tablet and computer.</div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="scrim" id="scrim" data-act="close"></div>
+<section class="drawer" id="drawer" aria-label="Truck details"></section>
+<div class="modal" id="modal"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+var STAGES=['incoming','prep','available','hold','sold','delivered'];
+var LABEL={incoming:'Incoming',prep:'In prep',available:'Available',hold:'On hold',sold:'Sold',delivered:'Delivered'};
+var PREP=['Mechanical inspection','Service records verified','DOT inspection','Detailing, inside and out','Clean title in hand'];
+var WHO=['Mechanic','Office','DOT inspector','Detailer','Office'];
+var SHOTS=['Front','Driver side','Passenger side','Rear','Cab interior','Sleeper','Dash and odometer','Engine','Tires','Fifth wheel'];
+var T='Rojas Hauling',M='Lakeside Diesel',D='ShineLine Detail';
+var trucks=[
+ {id:9291,year:2025,make:'Freightliner',model:'Cascadia',miles:301229,engine:'DD15',hp:425,trans:'Automatic',ratio:'2.15',cab:'Sleeper',apu:'No',paint:'#E4E8E6',status:'available',cost:98500,ask:124900,days:12,prep:[1,1,1,1,1],views:412,inq:9,
+  costs:[['Auction fee','Tri-State Auction',850],['Transport',T,1200],['Mechanic',M,1900],['DOT inspection',M,150],['Detailing',D,400],['Tires','Route 30 Tire',600]]},
+ {id:5229,year:2023,make:'Freightliner',model:'Cascadia',miles:411962,engine:'DD15',hp:455,trans:'Automatic',ratio:'2.41',cab:'Sleeper',apu:'Yes',paint:'#27507A',status:'hold',cost:71200,ask:94900,days:34,prep:[1,1,1,1,1],views:655,inq:14,
+  costs:[['Transport',T,900],['Mechanic',M,2400],['DOT inspection',M,150],['Detailing',D,400],['Parts','Midway Parts',300]]},
+ {id:2933,year:2024,make:'Freightliner',model:'Cascadia',miles:461476,engine:'DD15',hp:505,trans:'Automatic',ratio:'2.41',cab:'Sleeper',apu:'Yes',paint:'#B5362C',status:'prep',cost:70300,ask:89900,days:5,prep:[1,1,0,0,1],views:0,inq:0,
+  costs:[['Auction fee','Tri-State Auction',850],['Transport',T,420],['Mechanic',M,2680],['Parts','Midway Parts',850]]},
+ {id:9409,year:2023,make:'Peterbilt',model:'579',miles:400000,engine:'X15',hp:450,trans:'Automatic',ratio:'2.64',cab:'Sleeper',apu:'No',paint:'#2B2F2E',status:'available',cost:55000,ask:71000,days:48,prep:[1,1,1,1,1],views:530,inq:6,
+  costs:[['Transport',T,1100],['Mechanic',M,2250],['DOT inspection',M,150],['Detailing',D,400]]},
+ {id:4417,year:2022,make:'International',model:'MV607',miles:153000,engine:'B6.7',hp:220,trans:'Automatic',ratio:'5.57',cab:'Day cab',apu:'No',paint:'#E9A100',status:'available',cost:37500,ask:46900,days:71,prep:[1,1,1,1,1],views:288,inq:2,
+  costs:[['Transport',T,700],['Mechanic',M,1650],['DOT inspection',M,150],['Detailing',D,350],['Paint','ColorWorks',350]]},
+ {id:6839,year:2027,make:'Peterbilt',model:'579',miles:0,engine:'X15',hp:450,trans:'Automatic',ratio:'2.64',cab:'Sleeper',apu:'Yes',paint:'#0E5A43',status:'incoming',cost:158000,ask:174000,days:0,prep:[0,0,0,0,0],views:0,inq:0,
+  costs:[['Transport',T,600]]},
+ {id:3071,year:2022,make:'Freightliner',model:'Cascadia',miles:497000,engine:'DD15',hp:455,trans:'Automatic',ratio:'2.41',cab:'Sleeper',apu:'No',paint:'#8B9892',status:'sold',cost:44000,ask:59900,days:27,prep:[1,1,1,1,1],views:701,inq:11,
+  costs:[['Transport',T,800],['Mechanic',M,2250],['DOT inspection',M,150],['Detailing',D,400]]}
+];
+var team=[{name:'Alex Morgan',role:'Owner'},{name:'Ana Ruiz',role:'Sales rep'},{name:'Sam Keller',role:'Sales rep'},{name:'Mike Dawson',role:'Sales rep'},{name:'Ray Lopez',role:'Mechanic'},{name:'Tina Park',role:'Office'}];
+var LSTAT=['New','Contacted','Viewing','Won','Lost'];
+var leads=[
+ {name:'Darnell Brooks',kind:'Owner-operator',truck:5229,src:'Website',rep:'Ana Ruiz',st:0,when:'Today'},
+ {name:'Midwest Haul LLC',kind:'Fleet, 12 trucks',truck:9291,src:'Phone',rep:'Sam Keller',st:1,when:'Today'},
+ {name:'Chris Patel',kind:'Owner-operator',truck:4417,src:'Walk-in',rep:'Mike Dawson',st:0,when:'Today'},
+ {name:'Luis Ortega',kind:'Owner-operator',truck:2933,src:'Truck Paper',rep:'Ana Ruiz',st:1,when:'Yesterday'},
+ {name:'Tom Nguyen',kind:'Owner-operator',truck:9409,src:'Instagram',rep:'Sam Keller',st:2,when:'3 days ago'},
+ {name:'Great Lakes Freight',kind:'Fleet, 7 trucks',truck:3071,src:'Referral',rep:'Mike Dawson',st:3,when:'Last week'},
+ {name:'B and R Logistics',kind:'Fleet, 4 trucks',truck:9409,src:'Phone',rep:'Sam Keller',st:4,when:'Last week'}
+];
+var DSTAGE=['Inquiry','Viewing','Credit app','Deposit','Sold'];
+var deals=[
+ {id:1,buyer:'Luis Ortega',kind:'Owner-operator',truck:2933,stage:0,price:89900,down:12000,warranty:0,rep:'Ana Ruiz',note:'On the wish list, waiting for prep to finish',lenders:[]},
+ {id:2,buyer:'Tom Nguyen',kind:'Owner-operator',truck:9409,stage:1,price:71000,down:10000,warranty:2400,rep:'Sam Keller',note:'Viewing booked for Thursday 2 PM',lenders:[]},
+ {id:3,buyer:'Midwest Haul LLC',kind:'Fleet, 12 trucks',truck:9291,stage:2,price:124900,down:25000,warranty:3200,rep:'Sam Keller',note:'Wants 3 units this month',lenders:[['Northline Capital','Reviewing'],['Prairie Equipment Finance','Reviewing']]},
+ {id:4,buyer:'Karen Whitfield',kind:'Owner-operator',truck:5229,stage:3,price:93500,down:14000,warranty:2900,rep:'Ana Ruiz',note:'Deposit paid, hold expires in 2 days',lenders:[['Northline Capital','Approved'],['Prairie Equipment Finance','Declined']]},
+ {id:5,buyer:'Great Lakes Freight',kind:'Fleet, 7 trucks',truck:3071,stage:4,price:58500,down:58500,warranty:1900,rep:'Mike Dawson',note:'Paid in full, delivery Friday',lenders:[]}
+];
+var customers=[
+ ['Great Lakes Freight','Fleet, 7 trucks',3,'Day cabs under 400k miles','Mike Dawson','Yesterday'],
+ ['Midwest Haul LLC','Fleet, 12 trucks',0,'3 sleepers under 350k miles','Sam Keller','Today'],
+ ['Karen Whitfield','Owner-operator',1,'None','Ana Ruiz','2 days ago'],
+ ['Luis Ortega','Owner-operator',0,'2024 Cascadia under $90k','Ana Ruiz','Yesterday'],
+ ['Tom Nguyen','Owner-operator',0,'Peterbilt 579, any year','Sam Keller','3 days ago'],
+ ['Darnell Brooks','Owner-operator',0,'2023 Cascadia with APU','Ana Ruiz','Today']
+];
+var log=[
+ {who:'Ana Ruiz',t:'recorded a deposit on stock 5229',w:'9:40 AM'},
+ {who:'Ray Lopez',t:'finished the mechanical inspection on stock 2933',w:'9:12 AM'},
+ {who:'Tina Park',t:'added a $420 transport receipt to stock 2933',w:'8:30 AM'},
+ {who:'Sam Keller',t:'logged a new lead for stock 9291',w:'8:05 AM'},
+ {who:'Mike Dawson',t:'recorded the sale of stock 3071',w:'Yesterday'}
+];
+var REPOF={9291:'Sam Keller',5229:'Ana Ruiz',2933:'Ana Ruiz',9409:'Sam Keller',4417:'Mike Dawson',6839:'Sam Keller',3071:'Mike Dawson'};
+trucks.forEach(function(t){
+  t.rep=REPOF[t.id];var i=STAGES.indexOf(t.status);
+  t.hist=[['Tina Park','added the truck from a VIN scan']];
+  if(t.prep[0])t.hist.unshift(['Ray Lopez','logged the mechanical inspection']);
+  if(i>=2)t.hist.unshift(['Tina Park','marked the truck as Available']);
+  if(i>=3)t.hist.unshift([t.rep,'recorded a deposit']);
+  if(i>=4)t.hist.unshift([t.rep,'recorded the sale']);
+});
+var S={view:'dashboard',filter:'all',sel:null,tab:'overview',deal:null,user:0,entries:27};
+var me=function(){return team[S.user]};
+var boss=function(){return me().role=='Owner'||me().role=='Office'};
+var own=function(n){return boss()?usd(n):'Owner only'};
+var $=function(id){return document.getElementById(id)};
+var usd=function(n){return '$'+Math.round(n).toLocaleString('en-US')};
+var num=function(n){return n.toLocaleString('en-US')};
+var recon=function(t){return t.costs.reduce(function(a,c){return a+c[2]},0)};
+var profit=function(t){return t.ask-t.cost-recon(t)};
+var find=function(id){return trucks.filter(function(t){return t.id==id})[0]};
+var title=function(t){return t.year+' '+t.make+' '+t.model};
+var onLot=function(){return trucks.filter(function(t){return t.status!='sold'&&t.status!='delivered'})};
+var head=function(h,sub,btn){return '<div class="top"><div><h1>'+h+'</h1><div class="sub">'+sub+'</div></div>'+(btn||'')+'</div>'};
+
+function rig(c){
+  return '<svg viewBox="0 0 240 104" role="img" aria-label="Truck"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">'
+  +'<rect x="118" y="8" width="5" height="34" fill="#9AA5A0"/>'
+  +'<path d="M62 78V26a8 8 0 0 1 8-8h50v60z" fill="'+c+'"/>'
+  +'<path d="M120 30h34a6 6 0 0 1 6 5l4 19h44a10 10 0 0 1 10 10v14H120z" fill="'+c+'"/>'
+  +'<path d="M128 37h22l4 17h-26z" fill="#CFE0EA"/><rect x="74" y="30" width="30" height="13" rx="2" fill="#CFE0EA"/>'
+  +'<rect x="14" y="74" width="208" height="8" rx="2" fill="#3A4541"/><rect x="22" y="66" width="34" height="6" rx="2" fill="#3A4541"/>'
+  +'<g fill="#1E2623"><circle cx="38" cy="84" r="14"/><circle cx="70" cy="84" r="14"/><circle cx="190" cy="84" r="14"/></g>'
+  +'<g fill="#C9D1CD" stroke="none"><circle cx="38" cy="84" r="5"/><circle cx="70" cy="84" r="5"/><circle cx="190" cy="84" r="5"/></g>'
+  +'<rect x="214" y="62" width="6" height="8" fill="#E9A100" stroke="none"/></g></svg>';
+}
+
+
+function auto(text,id){
+  var w=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  log.unshift({who:me().name,t:text,w:w});S.entries++;
+  if(id&&find(id))find(id).hist.unshift([me().name,text.replace(/ (on|of|to|for) stock \d+/,'')]);
+  var el=document.createElement('div');el.className='toast';
+  el.innerHTML='<small>Saved for the whole team</small>'+me().name+' '+text;
+  $('toasts').appendChild(el);
+  setTimeout(function(){el.remove()},4200);
+}
+
+function nav(){
+  var fresh=leads.filter(function(l){return l.st==0}).length;
+  var open=trucks.filter(function(t){return t.status=='prep'}).reduce(function(a,t){return a+t.prep.filter(function(x){return !x}).length},0);
+  var items=[['dashboard','Today',''],['inventory','Inventory',''],['prep','Prep',open||''],['costs','Costs',''],0,['leads','Leads',fresh||''],['deals','Deals',''],['customers','Customers',''],0,['reports','Reports',''],['team','Team',''],['why','Before and after','']];
+  $('nav').innerHTML=items.map(function(i){
+    if(!i)return '<hr>';
+    return '<button data-act="go" data-v="'+i[0]+'"'+(S.view==i[0]?' aria-current="page"':'')+'>'+i[1]+(i[2]?'<span class="count">'+i[2]+'</span>':'')+'</button>';
+  }).join('');
+}
+
+function vDashboard(){
+  var lot=onLot(),c=function(s){return trucks.filter(function(t){return t.status==s}).length};
+  var value=lot.reduce(function(a,t){return a+t.cost+recon(t)},0),plan=lot.reduce(function(a,t){return a+profit(t)},0);
+  var att=[],w=leads.filter(function(l){return l.st==0}).length;
+  if(w)att.push({t:w+' new leads have not been contacted yet',v:'leads'});
+  lot.filter(function(t){return t.days>60}).forEach(function(t){att.push({t:'Stock '+t.id+' has been on the lot '+t.days+' days',id:t.id,red:1})});
+  trucks.filter(function(t){return t.status=='prep'}).forEach(function(t){var left=t.prep.filter(function(x){return !x}).length;att.push({t:'Stock '+t.id+' has '+left+' prep steps left before it can be sold',v:'prep'})});
+  trucks.filter(function(t){return t.status=='hold'}).forEach(function(t){att.push({t:'Deposit on stock '+t.id+' expires in 2 days',v:'deals'})});
+  return head('Today on the lot','Tuesday, October 6','<button class="btn primary" data-act="add">Add a truck</button>')
+  +'<div class="saved"><div class="num">'+S.entries+'</div><span>entries today from '+team.length+' people. Everyone works from the same numbers, on the lot and in the office.</span></div>'
+  +'<div class="panel strip"><div><div class="num">'+lot.length+'</div><span>Trucks on the lot</span></div><div><div class="num">'+c('available')+'</div><span>Ready to sell</span></div><div><div class="num">'+c('prep')+'</div><span>In prep</span></div><div><div class="num">'+c('hold')+'</div><span>On hold</span></div><div><div class="num">'+(c('sold')+c('delivered'))+'</div><span>Sold this month</span></div></div>'
+  +'<div class="cols"><section class="panel"><div class="panel-h"><h2>Needs attention</h2><small>'+att.length+' items</small></div><ul class="list">'
+  +att.map(function(a){return '<li><button data-act="'+(a.id?'open':'go')+'" data-id="'+(a.id||'')+'" data-v="'+(a.v||'')+'"><span class="mark'+(a.red?' red':'')+'"></span><span>'+a.t+'</span></button></li>'}).join('')
+  +'</ul></section><section class="panel"><div class="panel-h"><h2>Team activity</h2><small>who entered what</small></div><ul class="list">'
+  +log.slice(0,6).map(function(l){return '<li class="static"><span class="tick">'+l.who.charAt(0)+'</span><span><b>'+l.who+'</b> '+l.t+'</span><time>'+l.w+'</time></li>'}).join('')
+  +'</ul></section></div>'
+  +'<div class="money"><div class="panel"><span class="sub">Money tied up in inventory</span><div class="num">'+own(value)+'</div><span class="sub">Purchase price plus prep costs of unsold trucks</span></div><div class="panel"><span class="sub">Planned profit if everything sells at asking</span><div class="num">'+own(plan)+'</div><span class="sub">After purchase and all prep costs</span></div></div>';
+}
+
+function vInventory(){
+  var f=S.filter,list=trucks.filter(function(t){return f=='all'||t.status==f});
+  var chips=[['all','All']].concat(STAGES.slice(0,5).map(function(s){return [s,LABEL[s]]}));
+  return head('Inventory','Open a truck to see its numbers, photos, costs, documents and history.','<button class="btn primary" data-act="add">Add a truck</button>')
+  +'<div class="chips">'+chips.map(function(c){var n=c[0]=='all'?trucks.length:trucks.filter(function(t){return t.status==c[0]}).length;return '<button class="chip" data-act="filter" data-f="'+c[0]+'" aria-pressed="'+(f==c[0])+'">'+c[1]+' '+n+'</button>'}).join('')+'</div>'
+  +'<div class="panel rows"><div class="row head"><span>Stock</span><span></span><span>Truck</span><span class="r">Miles</span><span class="r">Asking</span><span class="r">Days</span><span class="r">Profit</span><span>Status</span></div>'
+  +(list.length?list.map(function(t){return '<button class="row" data-act="open" data-id="'+t.id+'"><span><span class="plate">No. '+t.id+'</span></span><span class="thumb">'+rig(t.paint)+'</span><span class="name">'+title(t)+'<small>'+t.engine+', '+t.hp+' HP, '+t.cab.toLowerCase()+'</small></span><span class="r num">'+num(t.miles)+'</span><span class="r num">'+usd(t.ask)+'</span><span class="r num'+(t.days>60?' old':'')+'">'+t.days+'</span><span class="r num">'+own(profit(t))+'</span><span><span class="st '+t.status+'">'+LABEL[t.status]+'</span></span></button>'}).join(''):'<div class="row"><span style="grid-column:1/-1;color:var(--muted)">No trucks with this status. Add a truck or pick another filter.</span></div>')
+  +'</div>';
+}
+function vPrep(){
+  var list=trucks.filter(function(t){return t.status=='prep'||t.status=='incoming'});
+  var open=function(k){return trucks.filter(function(t){return t.status=='prep'}).reduce(function(a,t){return a+WHO.filter(function(w,i){return w==k&&!t.prep[i]}).length},0)};
+  return head('Prep','A truck cannot be listed until all five steps are checked. Each person sees only their own tasks.')
+  +'<div class="crew">'+['Mechanic','DOT inspector','Detailer','Office'].map(function(k){return '<div class="panel"><div class="num">'+open(k)+'</div><span class="sub">open for '+k.toLowerCase()+'</span></div>'}).join('')+'</div>'
+  +(list.length?list.map(function(t){var d=t.prep.filter(Boolean).length;
+    return '<section class="panel prep-card"><div class="d-top"><div><span class="plate">No. '+t.id+'</span> <b style="margin-left:8px">'+title(t)+'</b></div><span class="st '+t.status+'">'+LABEL[t.status]+'</span></div>'
+    +'<div class="prog"><i style="width:'+(d/5*100)+'%"></i></div><span class="sub">'+(t.status=='incoming'?'Tasks open when the truck arrives':d+' of 5 steps done')+'</span>'
+    +'<ul class="check">'+PREP.map(function(x,k){return '<li><label><input type="checkbox" data-act="prep" data-id="'+t.id+'" data-k="'+k+'"'+(t.prep[k]?' checked':'')+(t.status!='prep'?' disabled':'')+'>'+x+'<small>'+WHO[k]+'</small></label></li>'}).join('')+'</ul>'
+    +'<div class="actions">'+(t.status=='incoming'?'<button class="btn primary small" data-act="arrive" data-id="'+t.id+'">Mark as arrived</button>':'<button class="btn primary small" data-act="publish" data-id="'+t.id+'"'+(d<5?' disabled':'')+'>Publish listing</button>')+'<button class="btn small" data-act="open" data-id="'+t.id+'">Open truck</button></div></section>'}).join('')
+   :'<div class="panel prep-card">Nothing in prep. Every truck on the lot is ready to sell.</div>');
+}
+function vCosts(){
+  var all=[],cats={};
+  trucks.forEach(function(t){t.costs.forEach(function(c){all.push([t.id,c[0],c[1],c[2]]);cats[c[0]]=(cats[c[0]]||0)+c[2]})});
+  var total=all.reduce(function(a,c){return a+c[3]},0),ck=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a]}),max=cats[ck[0]];
+  return head('Costs','Anyone can photograph a receipt. The cost lands on the right truck for everyone to see.','<button class="btn primary" data-act="receipt">Snap a receipt</button>')
+  +'<div class="cols"><section class="panel"><div class="panel-h"><h2>By category</h2><small>'+usd(total)+' total</small></div><div class="pad">'
+  +ck.map(function(k){return '<div class="hbar"><span>'+k+'</span><i style="width:'+(cats[k]/max*100)+'%"></i><span class="num r">'+usd(cats[k])+'</span></div>'}).join('')
+  +'</div></section><section class="panel"><div class="panel-h"><h2>Prep cost per truck</h2><small>against a $5,000 budget</small></div><div class="pad">'
+  +trucks.map(function(t){var r=recon(t);return '<div class="hbar"><span>No. '+t.id+' '+t.model+'</span><i class="'+(r>5000?'late':'')+'" style="width:'+Math.min(100,r/6000*100)+'%"></i><span class="num r">'+usd(r)+'</span></div>'}).join('')
+  +'</div></section></div><section class="panel section"><div class="panel-h"><h2>All receipts</h2><small>'+all.length+' entries</small></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Stock</th><th>Category</th><th>Vendor</th><th class="r">Amount</th></tr></thead><tbody>'
+  +all.slice().reverse().slice(0,12).map(function(c){return '<tr><td><span class="plate">No. '+c[0]+'</span></td><td>'+c[1]+'</td><td>'+c[2]+'</td><td class="r num">'+usd(c[3])+'</td></tr>'}).join('')
+  +'</tbody></table></div></section>';
+}
+function vLeads(){
+  var reps=team.filter(function(p){return p.role=='Sales rep'});
+  return head('Leads','Every rep logs their own leads, so the whole team sees who is talking to whom.','<button class="btn primary" data-act="addlead">Log a lead</button>')
+  +'<div class="chips">'+LSTAT.map(function(x,i){return '<span class="chip">'+x+' '+leads.filter(function(l){return l.st==i}).length+'</span>'}).join('')+'</div>'
+  +'<section class="panel"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Buyer</th><th>Type</th><th>Truck</th><th>Source</th><th>Rep</th><th>Logged</th><th>Status</th><th></th></tr></thead><tbody>'
+  +leads.map(function(l,i){return '<tr><td><b>'+l.name+'</b></td><td>'+l.kind+'</td><td><span class="plate">No. '+l.truck+'</span></td><td>'+l.src+'</td><td>'+l.rep+'</td><td>'+l.when+'</td><td><span class="tag '+(l.st==3?'ok':l.st==4?'off':l.st==0?'bad':'wait')+'">'+LSTAT[l.st]+'</span></td><td class="r">'+(l.st<3?'<button class="btn small" data-act="leadnext" data-i="'+i+'">Mark '+LSTAT[l.st+1].toLowerCase()+'</button>':'')+'</td></tr>'}).join('')
+  +'</tbody></table></div></section>'
+  +'<section class="panel section"><div class="panel-h"><h2>Leads per rep</h2><small>open and won</small></div><div class="pad">'
+  +reps.map(function(p){var mine=leads.filter(function(l){return l.rep==p.name});return '<div class="hbar"><span>'+p.name+'</span><i style="width:'+(mine.length/4*100)+'%;max-width:100%"></i><span class="num r">'+mine.length+'</span></div>'}).join('')+'</div></section>';
+}
+
+function vDeals(){
+  return head('Deals','Every buyer from first question to sold, with the rep who owns the deal.')
+  +'<div class="board">'+DSTAGE.map(function(s,i){var ds=deals.filter(function(d){return d.stage==i});
+    return '<div class="kcol"><h3>'+s+'<span>'+ds.length+'</span></h3>'+ds.map(function(d){var t=find(d.truck);return '<button class="kcard" data-act="deal" data-id="'+d.id+'"><b>'+d.buyer+'</b><small>'+title(t)+', No. '+t.id+'</small><div class="num">'+usd(d.price)+'</div><small>'+d.rep+'. '+d.note+'</small></button>'}).join('')+'</div>'}).join('')+'</div>';
+}
+function vCustomers(){
+  return head('Customers','Owner-operators and fleets, what they bought, what they are looking for and who looks after them.')
+  +'<section class="panel"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Customer</th><th>Type</th><th class="r">Bought</th><th>Looking for</th><th>Rep</th><th>Last contact</th></tr></thead><tbody>'
+  +customers.map(function(c){return '<tr><td><b>'+c[0]+'</b></td><td>'+c[1]+'</td><td class="r num">'+c[2]+'</td><td>'+c[3]+'</td><td>'+c[4]+'</td><td>'+c[5]+'</td></tr>'}).join('')
+  +'</tbody></table></div></section>'
+  +'<section class="panel section"><div class="panel-h"><h2>Purchase history: Great Lakes Freight</h2><small>3 trucks</small></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Truck</th><th>Rep</th><th class="r">Price</th></tr></thead><tbody>'
+  +'<tr><td>Oct 2</td><td>2022 Freightliner Cascadia, No. 3071</td><td>Mike Dawson</td><td class="r num">$58,500</td></tr><tr><td>Jun 18</td><td>2021 Freightliner Cascadia, No. 2204</td><td>Mike Dawson</td><td class="r num">$52,000</td></tr><tr><td>Feb 9</td><td>2021 Kenworth T680, No. 1187</td><td>Sam Keller</td><td class="r num">$61,900</td></tr>'
+  +'</tbody></table></div></section>';
+}
+
+function vReports(){
+  var m=[['May',4],['Jun',6],['Jul',5],['Aug',8],['Sep',7],['Oct',2]],max=8;
+  var src=[['Website',38],['Truck Paper',27],['Phone',18],['Instagram',10],['TikTok',7]];
+  var age=onLot().slice().sort(function(a,b){return b.days-a.days});
+  var byP=trucks.slice().sort(function(a,b){return profit(b)-profit(a)}),pm=profit(byP[0]);
+  var team=[['Sam Keller',34,'6 min','24%',52400,5240],['Ana Ruiz',29,'4 min','28%',47900,4790],['Mike Dawson',21,'19 min','14%',22100,2210]];
+  return head('Reports','Sample numbers, shown the way the owner would see them.','<button class="btn" data-act="export">Export to Excel</button>')
+  +'<div class="cols"><section class="panel"><div class="panel-h"><h2>Trucks sold per month</h2><small>October so far</small></div><div class="bars">'
+  +m.map(function(x,i){return '<div class="bar'+(i==m.length-1?' cur':'')+'"><span class="num" style="color:var(--ink);font-size:18px">'+x[1]+'</span><b style="height:'+(x[1]/max*72)+'%"></b><span>'+x[0]+'</span></div>'}).join('')
+  +'</div><div class="pad"></div></section><section class="panel"><div class="panel-h"><h2>Where leads come from</h2><small>share of leads</small></div><div class="pad">'
+  +src.map(function(x){return '<div class="hbar"><span>'+x[0]+'</span><i style="width:'+(x[1]/38*100)+'%"></i><span class="num r">'+x[1]+'%</span></div>'}).join('')
+  +'</div></section></div>'
+  +'<div class="cols section"><section class="panel"><div class="panel-h"><h2>Days on the lot</h2><small>red is past 60 days</small></div><div class="pad">'
+  +age.map(function(t){return '<div class="hbar"><span>No. '+t.id+' '+t.model+'</span><i class="'+(t.days>60?'late':'')+'" style="width:'+Math.max(2,t.days/80*100)+'%"></i><span class="num r">'+t.days+'</span></div>'}).join('')
+  +'</div></section><section class="panel"><div class="panel-h"><h2>Profit per truck</h2><small>after all costs</small></div><div class="pad">'
+  +byP.map(function(t){return '<div class="hbar"><span>No. '+t.id+' '+t.model+'</span><i style="width:'+(profit(t)/pm*100)+'%"></i><span class="num r">'+Math.round(profit(t)/1000)+'k</span></div>'}).join('')
+  +'</div></section></div>'
+  +'<section class="panel section"><div class="panel-h"><h2>Sales team</h2><small>this quarter, commission at 10% of profit</small></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Rep</th><th class="r">Leads</th><th class="r">First reply</th><th class="r">Close rate</th><th class="r">Profit</th><th class="r">Commission</th></tr></thead><tbody>'
+  +team.map(function(r){return '<tr><td><b>'+r[0]+'</b></td><td class="r num">'+r[1]+'</td><td class="r">'+r[2]+'</td><td class="r num">'+r[3]+'</td><td class="r num">'+usd(r[4])+'</td><td class="r num">'+usd(r[5])+'</td></tr>'}).join('')
+  +'</tbody></table></div></section>';
+}
+function vTeam(){
+  var roles=[['Owner','Everything, including purchase prices, profit and commissions'],['Sales rep','Inventory, own leads and deals. Purchase prices and profit stay hidden.'],['Mechanic','Prep tasks and the trucks they belong to'],['Office','Documents, titles, payments and costs']];
+  var stat=function(p){
+    var sold=trucks.filter(function(t){return t.rep==p.name&&(t.status=='sold'||t.status=='delivered')});
+    return {leads:leads.filter(function(l){return l.rep==p.name}).length,deals:deals.filter(function(d){return d.rep==p.name&&d.stage<4}).length,sold:sold.length,profit:sold.reduce(function(a,t){return a+profit(t)},0),ent:log.filter(function(l){return l.who==p.name}).length,last:(log.filter(function(l){return l.who==p.name})[0]||{}).t||'No entries yet'};
+  };
+  return head('Team','Everyone enters their own part. The whole company sees one shared picture.')
+  +'<section class="panel"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Person</th><th>Role</th><th class="r">Leads</th><th class="r">Open deals</th><th class="r">Sold</th><th class="r">Profit</th><th class="r">Commission</th><th>Last entry</th></tr></thead><tbody>'
+  +team.map(function(p,i){var x=stat(p),rep=p.role=='Sales rep';return '<tr><td><b>'+p.name+'</b>'+(i==S.user?' <span class="tag ok">You</span>':'')+'</td><td>'+p.role+'</td><td class="r num">'+(rep?x.leads:'')+'</td><td class="r num">'+(rep?x.deals:'')+'</td><td class="r num">'+(rep?x.sold:'')+'</td><td class="r num">'+(rep?own(x.profit):'')+'</td><td class="r num">'+(rep?(boss()||i==S.user?usd(x.profit*.1):'Owner only'):'')+'</td><td>'+x.last+'</td></tr>'}).join('')
+  +'</tbody></table></div></section>'
+  +'<div class="cols section"><section class="panel"><div class="panel-h"><h2>Who sees what</h2></div><div class="tbl-wrap"><table class="tbl"><tbody>'
+  +roles.map(function(r){return '<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td></tr>'}).join('')
+  +'</tbody></table></div></section><section class="panel"><div class="panel-h"><h2>One company, every screen</h2></div><ul class="list"><li class="static"><span class="tick">&#10003;</span><span>Same data on the phone, the tablet and the office computer</span></li><li class="static"><span class="tick">&#10003;</span><span>An entry shows up for everyone the moment it is saved</span></li><li class="static"><span class="tick">&#10003;</span><span>Every change carries a name and a time</span></li><li class="static"><span class="tick">&#10003;</span><span>Backed up every night</span></li></ul></section></div>';
+}
+
+function vWhy(){
+  var p=[['Typing every truck in by hand, field by field','Scan the VIN and the truck fills itself in'],
+   ['Photos scattered across phones and chat groups','Guided photos stored with the truck'],
+   ['Inventory in one spreadsheet, costs in another','One shared record per truck'],
+   ['Nobody knows which rep is talking to which buyer','Every lead logged with a rep and a status'],
+   ['Chasing the mechanic and detailer for updates','Prep progress visible to everyone'],
+   ['Receipts in a shoebox, real profit unknown','Photograph the receipt, see profit per truck live'],
+   ['A truck sits for months and nobody notices','Days on the lot shown for every truck'],
+   ['Two reps promise the same truck to two buyers','A deposit puts the truck on hold for all'],
+   ['The owner calls the lot to ask what sold','The whole business on the phone, anywhere'],
+   ['Commissions worked out by hand at month end','Sales and commission tracked per rep']];
+  return head('Before and after','Ten daily problems on a truck lot and what replaces them.')
+  +'<section class="panel"><div class="ba h"><div>Today</div><div></div><div>With RigDesk</div></div>'
+  +p.map(function(x){return '<div class="ba"><div class="was">'+x[0]+'</div><div class="mid">&#9656;</div><div class="now">'+x[1]+'</div></div>'}).join('')+'</section>';
+}
+
+function drawer(){
+  var d=$('drawer'),t=S.sel?find(S.sel):null;
+  if(!t){d.classList.remove('on');return}
+  var i=STAGES.indexOf(t.status),done=t.prep.filter(Boolean).length,p=profit(t),body='';
+  var next={incoming:['arrive','Mark as arrived'],prep:['publish','Publish listing'],available:['deposit','Take deposit'],hold:['sell','Mark as sold'],sold:['deliver','Mark as delivered']}[t.status];
+  var hint={incoming:'Arrival opens the prep checklist for the crew.',prep:'Publishing unlocks when all five prep steps are checked.',available:'A deposit puts the truck on hold for the whole team.',hold:'Selling records the profit and the commission for the rep.',sold:'Delivery closes the file.',delivered:'This truck is archived with its full history.'}[t.status];
+  if(S.tab=='overview'){
+    var avg=Math.round(t.ask*1.035/100)*100,lo=t.ask*.88,hi=t.ask*1.14,pos=function(v){return (v-lo)/(hi-lo)*100};
+    body='<div class="route"><i style="width:'+(i/5*83.34)+'%"></i>'+STAGES.map(function(s,k){return '<div class="stop'+(k<i?' done':'')+(k==i?' now':'')+'"><b></b>'+LABEL[s]+'</div>'}).join('')+'</div>'
+    +'<div class="calc"><div><span>Purchase</span><div class="num">'+own(t.cost)+'</div></div><div><span>Prep costs</span><div class="num">'+own(recon(t))+'</div></div><div><span>Asking</span><div class="num">'+usd(t.ask)+'</div></div><div class="profit"><span>'+(i>=4?'Profit':'Planned profit')+'</span><div class="num">'+own(p)+'</div></div></div>'
+    +'<div class="specs"><div><span>Miles</span><b>'+num(t.miles)+'</b></div><div><span>Engine</span><b>'+t.engine+', '+t.hp+' HP</b></div><div><span>Transmission</span><b>'+t.trans+'</b></div><div><span>Ratio</span><b>'+t.ratio+'</b></div><div><span>Cab</span><b>'+t.cab+'</b></div><div><span>APU</span><b>'+t.apu+'</b></div></div>'
+    +'<div class="market"><b>Price against the market</b><div class="scale"><i style="left:'+pos(t.ask)+'%" data-l="You '+usd(t.ask)+'"></i><i class="avg" style="left:'+pos(avg)+'%" data-l="Similar trucks '+usd(avg)+'"></i></div><span class="sub">Sample comparison with 8 similar listings.</span></div>'
+    +'<h3 style="font-size:20px">Prep checklist, '+done+' of 5</h3><ul class="check">'+PREP.map(function(x,k){return '<li><label><input type="checkbox" data-act="prep" data-id="'+t.id+'" data-k="'+k+'"'+(t.prep[k]?' checked':'')+(t.status!='prep'?' disabled':'')+'>'+x+'<small>'+WHO[k]+'</small></label></li>'}).join('')+'</ul>'
+    +'<div class="actions">'+(next?'<button class="btn primary" data-act="'+next[0]+'" data-id="'+t.id+'"'+(t.status=='prep'&&done<5?' disabled':'')+'>'+next[1]+'</button>':'')+(t.status=='available'?'<button class="btn" data-act="drop">Drop price by $1,000</button>':'')+'</div><div class="hint">'+hint+'</div>';
+  }else if(S.tab=='photos'){
+    var has=t.status!='incoming';
+    body='<div class="shots">'+SHOTS.map(function(x){return '<div class="shot'+(has?' ok':'')+'">'+(has?'&#10003; ':'')+x+'</div>'}).join('')+'</div>'
+    +'<div class="hint">'+(has?'10 guided photos and a walk-around video, stored with the truck for the whole team.':'Photos are taken on the lot when the truck arrives. The app asks for each shot in order.')+'</div>';
+  }else if(S.tab=='costs'){
+    body='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Category</th><th>Vendor</th><th class="r">Amount</th></tr></thead><tbody>'
+    +t.costs.map(function(c){return '<tr><td>'+c[0]+'</td><td>'+c[1]+'</td><td class="r num">'+usd(c[2])+'</td></tr>'}).join('')
+    +'</tbody><tfoot><tr><td colspan="2">Prep costs so far</td><td class="r num">'+usd(recon(t))+'</td></tr></tfoot></table></div>'
+    +'<div class="actions"><button class="btn primary" data-act="receipt">Snap a receipt</button></div>';
+  }else if(S.tab=='history'){
+    body='<ul class="tl" style="padding:14px 4px">'+t.hist.map(function(h){return '<li><b>'+h[0]+'</b><small>'+h[1]+'</small></li>'}).join('')+'</ul><div class="hint">Every entry carries a name, so nothing gets lost between shifts.</div>';
+  }else{
+    var st=function(ready,wait){return ready?'<span class="tag ok">'+ready+'</span>':'<span class="tag '+(wait?'wait':'off')+'">'+(wait||'Not yet')+'</span>'};
+    var docs=[['Inspection report',st(t.prep[0]&&'Ready','')],['Spec sheet',st('Ready')],['DOT inspection certificate',st(t.prep[2]&&'Ready','')],['Title',st(t.prep[4]&&'In hand','Ordered')],
+      ['Deposit receipt',st(i>=3&&'Signed','')],['Buyer order',st(i>=4&&'Signed',i==3?'Waiting for signature':'')],['Bill of sale',st(i>=4&&'Signed','')],['Odometer statement',st(i>=4&&'Signed','')],['Delivery checklist',st(i>=5&&'Signed','')]];
+    body='<div class="tbl-wrap"><table class="tbl"><tbody>'+docs.map(function(x){return '<tr><td><b>'+x[0]+'</b></td><td class="r">'+x[1]+'</td></tr>'}).join('')+'</tbody></table></div>'
+    +'<div class="hint">Documents are filled in from the truck and buyer details and signed on a phone. Selling a truck without a title in hand shows a warning.</div>';
+  }
+  var tabs=[['overview','Overview'],['photos','Photos'],['costs','Costs'],['docs','Documents'],['history','History']];
+  d.innerHTML='<div class="d-top"><div><span class="plate">No. '+t.id+'</span> <span class="st '+t.status+'" style="margin-left:6px">'+LABEL[t.status]+'</span><h2 style="margin-top:8px;font-size:28px">'+title(t)+'</h2><div class="sub">Chicago lot, '+t.days+' days, sales rep '+t.rep+'</div></div><button class="close" data-act="close" aria-label="Close">&#10005;</button></div>'
+  +'<div class="hero">'+rig(t.paint)+'</div><div class="tabs" role="tablist">'+tabs.map(function(x){return '<button role="tab" data-act="tab" data-t="'+x[0]+'" aria-selected="'+(S.tab==x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'+body;
+  d.classList.add('on');
+}
+function pay(P,down,n,apr){var L=Math.max(0,P-down),r=apr/100/12;return r?L*r/(1-Math.pow(1+r,-n)):L/n}
+function dealModal(){
+  var d=deals.filter(function(x){return x.id==S.deal})[0],t=find(d.truck),total=d.price+d.warranty;
+  var need=[['Credit application',2],['Deposit receipt',3],['Buyer order',3],['Bill of sale',4],['Odometer statement',4],['As-is statement',4]];
+  $('modal').innerHTML='<div class="sheet" role="dialog" aria-label="Deal"><div class="d-top"><div><h2>'+d.buyer+'</h2><div class="sub">'+d.kind+', '+title(t)+' (No. '+t.id+'), rep '+d.rep+'</div></div><button class="close" data-act="closeModal" aria-label="Close">&#10005;</button></div>'
+  +'<div class="chips" style="margin:14px 0 0">'+DSTAGE.map(function(s,i){return '<span class="chip" aria-pressed="'+(i==d.stage)+'">'+s+'</span>'}).join('')+'</div>'
+  +'<div class="kv"><div><span>Truck price</span><b>'+usd(d.price)+'</b></div><div><span>Warranty</span><b>'+(d.warranty?usd(d.warranty):'None')+'</b></div><div><span>Total</span><b>'+usd(total)+'</b></div><div><span>Asking was</span><b>'+usd(t.ask)+'</b></div><div><span>Profit on this deal</span><b>'+own(d.price-t.cost-recon(t)+d.warranty*.4)+'</b></div><div><span>Commission</span><b>'+usd((d.price-t.cost-recon(t))*.1)+'</b></div></div>'
+  +'<div class="calcbox"><b>Payment calculator</b>'
+  +'<label>Down payment<input type="range" id="c-down" min="0" max="'+Math.round(total/2)+'" step="500" value="'+Math.min(d.down,Math.round(total/2))+'" data-calc="'+total+'"><output id="o-down"></output></label>'
+  +'<label>Term<input type="range" id="c-term" min="24" max="72" step="12" value="48" data-calc="'+total+'"><output id="o-term"></output></label>'
+  +'<label>Rate<input type="range" id="c-apr" min="6" max="18" step="0.5" value="11.5" data-calc="'+total+'"><output id="o-apr"></output></label>'
+  +'<div class="pay"><span class="sub">Estimated monthly payment</span><span class="num" id="o-pay"></span></div></div>'
+  +(d.lenders.length?'<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Lender</th><th class="r">Credit application</th></tr></thead><tbody>'+d.lenders.map(function(l){return '<tr><td><b>'+l[0]+'</b></td><td class="r"><span class="tag '+(l[1]=='Approved'?'ok':l[1]=='Declined'?'bad':'wait')+'">'+l[1]+'</span></td></tr>'}).join('')+'</tbody></table></div>':'<div class="hint">No credit application yet. The buyer fills it in from a link on their phone.</div>')
+  +'<div class="tbl-wrap" style="margin-top:10px"><table class="tbl"><thead><tr><th>Document</th><th class="r">Status</th></tr></thead><tbody>'+need.map(function(x){return '<tr><td>'+x[0]+'</td><td class="r"><span class="tag '+(d.stage>x[1]?'ok':d.stage==x[1]?'wait':'off')+'">'+(d.stage>x[1]?'Signed':d.stage==x[1]?'Waiting for signature':'Not needed yet')+'</span></td></tr>'}).join('')+'</tbody></table></div>'
+  +'<div class="actions">'+(d.stage<4?'<button class="btn primary" data-act="advance">Move to '+DSTAGE[d.stage+1]+'</button>':'')+'<button class="btn" data-act="sign">Send documents to sign</button><button class="btn" data-act="open" data-id="'+t.id+'">Open truck</button></div></div>';
+  $('modal').classList.add('on');calc();
+}
+function calc(){
+  var el=$('c-down');if(!el)return;
+  var P=+el.dataset.calc,down=+el.value,n=+$('c-term').value,a=+$('c-apr').value;
+  $('o-down').textContent=usd(down);$('o-term').textContent=n+' mo';$('o-apr').textContent=a.toFixed(1)+'%';$('o-pay').textContent=usd(pay(P,down,n,a));
+}
+function addModal(){
+  $('modal').innerHTML='<div class="sheet" role="dialog" aria-label="Add a truck"><div class="d-top"><h2>Add a truck</h2><button class="close" data-act="closeModal" aria-label="Close">&#10005;</button></div><div class="sub">Scan the VIN, take the photos, confirm the price. About two minutes.</div>'
+  +'<div class="vin"><input id="vin" value="1XPBD49X5RD614783" aria-label="VIN"><button class="btn primary" data-act="scan">Scan VIN</button></div>'
+  +'<div class="form"><div><label>Year<input id="f-year"></label></div><div><label>Make<input id="f-make"></label></div><div><label>Model<input id="f-model"></label></div><div><label>Engine<input id="f-engine"></label></div><div><label>Miles<input id="f-miles" value="338,400"></label></div><div><label>Cab<input id="f-cab"></label></div><div><label>Purchase price<input id="f-cost" value="82,000"></label></div><div><label>Asking price<input id="f-ask" value="104,900"></label></div></div>'
+  +'<div class="shots" id="shots">'+SHOTS.map(function(x){return '<div class="shot">'+x+'</div>'}).join('')+'</div>'
+  +'<div class="desc" id="desc"><span style="color:var(--muted)">The listing description appears here.</span></div>'
+  +'<div class="actions"><button class="btn" data-act="shoot">Take guided photos</button><button class="btn" data-act="write">Write the description</button><button class="btn primary" data-act="save">Save truck</button></div></div>';
+  $('modal').classList.add('on');scrim();
+}
+function scrim(){$('scrim').classList.toggle('on',!!S.sel||$('modal').classList.contains('on'))}
+function closeModal(){S.deal=null;$('modal').classList.remove('on');$('modal').innerHTML=''}
+function render(){
+  nav();
+  var bar='<div class="whoami"><label for="who">Signed in as</label><select id="who">'+team.map(function(p,i){return '<option value="'+i+'"'+(i==S.user?' selected':'')+'>'+p.name+', '+p.role+'</option>'}).join('')+'</select><span>'+(boss()?'Sees all numbers':'Purchase prices and profit are hidden for this role')+'</span></div>';
+  $('main').innerHTML=bar+{dashboard:vDashboard,inventory:vInventory,prep:vPrep,costs:vCosts,leads:vLeads,deals:vDeals,customers:vCustomers,reports:vReports,team:vTeam,why:vWhy}[S.view]();
+  drawer();
+  if(S.deal)dealModal();
+  scrim();
+}
+document.addEventListener('input',function(e){if(e.target.dataset.calc)calc()});
+document.addEventListener('change',function(e){if(e.target.id=='who'){S.user=+e.target.value;render()}});
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var a=b.dataset.act,t=find(b.dataset.id||S.sel);
+  if(a=='go'){S.view=b.dataset.v;S.sel=null;closeModal();$('main').scrollTop=0}
+  else if(a=='filter')S.filter=b.dataset.f;
+  else if(a=='open'){closeModal();S.sel=+b.dataset.id;S.tab='overview'}
+  else if(a=='tab')S.tab=b.dataset.t;
+  else if(a=='close'){S.sel=null;closeModal()}
+  else if(a=='closeModal')closeModal();
+  else if(a=='add'){S.sel=null;drawer();addModal();return}
+  else if(a=='deal')S.deal=+b.dataset.id;
+  else if(a=='prep'){t.prep[+b.dataset.k]=b.checked?1:0;if(b.checked)auto('checked off "'+PREP[+b.dataset.k]+'" on stock '+t.id,t.id)}
+  else if(a=='arrive'){t.status='prep';auto('marked stock '+t.id+' as arrived, prep checklist opened',t.id)}
+  else if(a=='publish'){t.status='available';auto('marked stock '+t.id+' as Available',t.id)}
+  else if(a=='deposit'){t.status='hold';auto('recorded a deposit on stock '+t.id+', truck is on hold',t.id)}
+  else if(a=='sell'){t.status='sold';auto('recorded the sale of stock '+t.id+', profit and commission updated',t.id)}
+  else if(a=='deliver'){t.status='delivered';auto('marked stock '+t.id+' as delivered',t.id)}
+  else if(a=='drop'){t.ask-=1000;auto('lowered the price of stock '+t.id+' to '+usd(t.ask),t.id)}
+  else if(a=='receipt'){var rt=t||trucks.filter(function(x){return x.status=='prep'})[0]||trucks[0];rt.costs.push(['Detailing',D,185]);auto('added a $185 detailing receipt to stock '+rt.id,rt.id)}
+  else if(a=='export')auto('exported the report to Excel');
+  else if(a=='leadnext'){var l=leads[+b.dataset.i];l.st++;auto('moved '+l.name+' to '+LSTAT[l.st])}
+  else if(a=='addlead'){leads.unshift({name:'New buyer',kind:'Owner-operator',truck:9291,src:'Phone',rep:me().role=='Sales rep'?me().name:'Sam Keller',st:0,when:'Just now'});auto('logged a new lead for stock 9291',9291)}
+  else if(a=='advance'){var d=deals.filter(function(x){return x.id==S.deal})[0],dt=find(d.truck);d.stage++;
+    auto('moved '+d.buyer+' to '+DSTAGE[d.stage]+' on stock '+dt.id,dt.id);
+    if(d.stage==2)d.lenders=[['Northline Capital','Reviewing'],['Prairie Equipment Finance','Reviewing']];
+    if(d.stage==3&&dt.status=='available')dt.status='hold';
+    if(d.stage==4){dt.status='sold';dt.ask=d.price}}
+  else if(a=='scan'){
+    var vals=[['f-year','2024'],['f-make','Peterbilt'],['f-model','579'],['f-engine','X15, 450 HP'],['f-cab','Sleeper']];
+    b.disabled=true;b.textContent='Reading...';
+    vals.forEach(function(v,k){setTimeout(function(){var el=$(v[0]);if(!el)return;el.value=v[1];el.classList.add('filled');if(k==vals.length-1)b.textContent='VIN read'},260*(k+1))});
+    return;
+  }
+  else if(a=='shoot'){
+    b.disabled=true;var tiles=document.querySelectorAll('#shots .shot');
+    tiles.forEach(function(el,k){setTimeout(function(){el.classList.add('ok');el.innerHTML='&#10003; '+SHOTS[k]},180*(k+1))});
+    return;
+  }
+  else if(a=='write'){
+    var text='2024 Peterbilt 579 sleeper with the Cummins X15 at 450 HP and an automatic transmission. 338,400 miles, fully inspected, DOT ready and detailed inside and out. Clean title in hand. Financing and warranty available.',el=$('desc'),k=0;
+    el.textContent='';b.disabled=true;
+    var iv=setInterval(function(){if(!$('desc')){clearInterval(iv);return}k+=4;el.textContent=text.slice(0,k);if(k>=text.length)clearInterval(iv)},16);
+    return;
+  }
+  else if(a=='save'){
+    var n=function(id){return +($(id).value.replace(/[^0-9]/g,''))||0};
+    var id=7100+Math.floor(Math.random()*800);
+    trucks.unshift({id:id,year:+$('f-year').value||2024,make:$('f-make').value||'Peterbilt',model:$('f-model').value||'579',miles:n('f-miles'),engine:'X15',hp:450,trans:'Automatic',ratio:'2.64',cab:$('f-cab').value||'Sleeper',apu:'No',paint:'#5B3E8A',status:'incoming',cost:n('f-cost'),ask:n('f-ask'),days:0,prep:[0,0,0,0,0],views:0,inq:0,costs:[],rep:me().role=='Sales rep'?me().name:'Sam Keller',hist:[]});
+    closeModal();S.view='inventory';S.filter='all';S.sel=id;S.tab='overview';
+    auto('added stock '+id+' from a VIN scan',id);
+  }
+  render();
+});
+document.addEventListener('keydown',function(e){if(e.key=='Escape'){S.sel=null;closeModal();render()}});
+render();
+</script>
+</body>
+</html>
